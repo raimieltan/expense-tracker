@@ -8,7 +8,14 @@ export const expenseController = {
     const userId = user.userId; // Retrieve userId from token
 
     try {
-      const expense = await expenseService.createExpense({ title, amount, date, userId });
+      // Convert the date string into a valid Date object
+      const parsedDate = new Date(date);
+
+      if (isNaN(parsedDate.getTime())) {
+        throw new Error('Invalid date format');
+      }
+
+      const expense = await expenseService.createExpense({ title, amount, date: parsedDate, userId });
       return new Response(JSON.stringify(expense), { status: 201 });
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
@@ -16,14 +23,17 @@ export const expenseController = {
     }
   },
 
-  // Get all expenses for the authenticated user
   async getAll(req: Request) {
-    const user = JSON.parse(req.headers.get('user')!); // Extract user info
-    const userId = user.userId; // Retrieve userId from token
+    const user = JSON.parse(req.headers.get('user')!);
+    const userId = user.userId;
+
+    const url = new URL(req.url);
+    const page = Number(url.searchParams.get('page')) || 1;
+    const limit = Number(url.searchParams.get('limit')) || 5;
 
     try {
-      const expenses = await expenseService.getExpenses(userId);
-      return new Response(JSON.stringify(expenses), { status: 200 });
+      const { expenses, totalPages, totalExpenses, totalAmount } = await expenseService.getExpenses(userId, page, limit);
+      return new Response(JSON.stringify({ expenses, totalPages, currentPage: page, totalExpenses, totalAmount }), { status: 200 });
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
       return new Response(JSON.stringify({ error: errorMessage }), { status: 400 });

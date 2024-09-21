@@ -9,10 +9,17 @@ export const expenseService = {
     return expenseRepository.createExpense(data);
   },
 
-  async getExpenses(userId: number) {
-    return expenseRepository.getExpenses(userId);
-  },
+  async getExpenses(userId: number, page: number, limit: number) {
+    const skip = (page - 1) * limit;
+    const take = limit;
 
+    const { expenses, totalExpenses, totalAmount } = await expenseRepository.getExpenses(userId, skip, take);
+
+    console.log(totalExpenses)
+    const totalPages = Math.ceil(totalExpenses / limit);
+    return { expenses, totalPages, totalExpenses, totalAmount };
+  },
+  
   async getExpenseById(expenseId: number) {
     return expenseRepository.getExpenseById(expenseId);
   },

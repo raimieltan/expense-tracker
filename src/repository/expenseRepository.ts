@@ -10,11 +10,29 @@ export const expenseRepository = {
     });
   },
 
-  async getExpenses(userId: number) {
-    return prisma.expense.findMany({
+  async getExpenses(userId: number, skip: number, take: number) {
+    // Count total expenses
+    const totalExpenses = await prisma.expense.count({
       where: { userId },
-      orderBy: { date: 'desc' },  // Sort by most recent
     });
+
+    // Sum all expenses amount for the user
+    const totalAmount = await prisma.expense.aggregate({
+      _sum: {
+        amount: true,
+      },
+      where: { userId },
+    });
+
+    // Find paginated expenses
+    const expenses = await prisma.expense.findMany({
+      where: { userId },
+      orderBy: { date: 'desc' }, // Sort by most recent
+      skip,
+      take,
+    });
+
+    return { expenses, totalExpenses, totalAmount: totalAmount._sum.amount || 0 };
   },
 
   async getExpenseById(expenseId: number) {
