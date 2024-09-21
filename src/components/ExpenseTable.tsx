@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Modal from './Modal';
 import Pagination from './Pagination';
+import BudgetTracker from './BudgetTracker';
 
 interface Expense {
   id: number;
@@ -129,8 +130,9 @@ const ExpenseTable = () => {
       {/* Display total amount */}
       <p className="text-center text-lg font-semibold mb-4">Total Amount: ${totalAmount.toFixed(2)}</p>
 
+      <BudgetTracker />
       {/* Button to open modal */}
-      <div className="flex justify-end mb-4">
+      <div className="flex justify-end mb-4 mt-2">
         <button
           onClick={handleOpenModal}
           className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition-colors"
