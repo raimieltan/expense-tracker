@@ -10,10 +10,23 @@ interface Expense {
   title: string;
   amount: number;
   date: string;
+  budgetId?: number;
+  budget: Budget
 }
+
+interface Budget {
+  id: number;
+  title: string;
+  amount: number;
+  totalExpenseAmount: number;
+}
+
+
 
 const ExpenseTable = () => {
   const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [budgets, setBudgets] = useState<Budget[]>([]);
+  const [selectedBudget, setSelectedBudget] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -22,12 +35,38 @@ const ExpenseTable = () => {
   const [date, setDate] = useState('');
   const [page, setPage] = useState(1);
   const [totalResults, setTotalResults] = useState(0);
-  const [totalAmount, setTotalAmount] = useState(0); // State for total amount
+  const [totalAmount, setTotalAmount] = useState(0);
   const ITEMS_PER_PAGE = 5;
 
   useEffect(() => {
     fetchExpenses();
+    fetchBudgets();
   }, [page]);
+
+  useEffect(() => {
+    if (isModalOpen) {
+      fetchBudgets();
+    }
+  }, [isModalOpen]);
+
+  const fetchBudgets = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) throw new Error('User not authenticated. Please log in.');
+
+      const res = await fetch('/api/budgets', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!res.ok) throw new Error('Failed to fetch budgets');
+
+      const data = await res.json();
+      setBudgets(data); // Set available budgets
+    } catch (err: any) {
+      setError(err.message);
+    }
+  };
+
 
   const fetchExpenses = async () => {
     try {
@@ -48,8 +87,8 @@ const ExpenseTable = () => {
 
       const data = await res.json();
       setExpenses(data.expenses);
-      setTotalResults(data.totalExpenses); // totalResults from the API
-      setTotalAmount(data.totalAmount); // totalAmount from the API
+      setTotalResults(data.totalExpenses); 
+      setTotalAmount(data.totalAmount);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -66,27 +105,27 @@ const ExpenseTable = () => {
         throw new Error('User not authenticated. Please log in.');
       }
 
+      console.log(JSON.stringify({ title, amount, date, budgetId: selectedBudget, }))
       const res = await fetch('/api/expenses', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ title, amount, date }),
+        body: JSON.stringify({ title, amount, date, budgetId: selectedBudget, }),
       });
 
       if (!res.ok) {
         throw new Error('Failed to add expense');
       }
 
-      // After adding, close the modal and reset the form
       setIsModalOpen(false);
       setTitle('');
       setAmount(0);
       setDate('');
-
-      // Refetch expenses after adding a new one
+      setSelectedBudget(null);
       fetchExpenses();
+      fetchBudgets();
     } catch (err: any) {
       setError(err.message);
     }
@@ -112,6 +151,7 @@ const ExpenseTable = () => {
 
       // Refetch data after deletion
       fetchExpenses();
+      fetchBudgets();
     } catch (err: any) {
       setError(err.message);
     }
@@ -127,11 +167,16 @@ const ExpenseTable = () => {
     <div className="container mx-auto py-6">
       <h1 className="text-2xl font-semibold text-center mb-4">Expenses</h1>
 
-      {/* Display total amount */}
+   
       <p className="text-center text-lg font-semibold mb-4">Total Amount: ${totalAmount.toFixed(2)}</p>
 
-      <BudgetTracker />
-      {/* Button to open modal */}
+      {
+        budgets.length > 0 ? (
+          <BudgetTracker budgets={budgets} fetchBudgets={fetchBudgets} />
+        ) : null
+      }
+
+
       <div className="flex justify-end mb-4 mt-2">
         <button
           onClick={handleOpenModal}
@@ -141,7 +186,7 @@ const ExpenseTable = () => {
         </button>
       </div>
 
-      {/* Modal for Adding Expense */}
+
       <Modal isOpen={isModalOpen} onClose={handleCloseModal}>
         <h2 className="text-lg font-semibold mb-4">Add New Expense</h2>
         <form onSubmit={handleAddExpense}>
@@ -168,6 +213,21 @@ const ExpenseTable = () => {
             />
           </div>
           <div className="mb-4">
+            <label htmlFor="budget" className="block text-sm font-medium text-gray-700">Select Budget</label>
+            <select
+              id="budget"
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"
+              value={selectedBudget ?? ''}
+              onChange={(e) => setSelectedBudget(Number(e.target.value))}
+              required
+            >
+              <option value="">Select a budget</option>
+              {budgets.map((budget) => (
+                <option key={budget.id} value={budget.id}>{budget.title}</option>
+              ))}
+            </select>
+          </div>
+          <div className="mb-4">
             <label htmlFor="date" className="block text-sm font-medium text-gray-700">Date</label>
             <input
               id="date"
@@ -187,7 +247,7 @@ const ExpenseTable = () => {
         </form>
       </Modal>
 
-      {/* Expense Table */}
+
       <div className="overflow-x-auto">
         <table className="min-w-full table-auto border-collapse border border-gray-300">
           <thead>
@@ -195,6 +255,7 @@ const ExpenseTable = () => {
               <th className="border border-gray-300 px-4 py-2 text-left">Title</th>
               <th className="border border-gray-300 px-4 py-2 text-left">Amount</th>
               <th className="border border-gray-300 px-4 py-2 text-left">Date</th>
+              <th className="border border-gray-300 px-4 py-2 text-left">Budget</th>
               <th className="border border-gray-300 px-4 py-2 text-left">Actions</th>
             </tr>
           </thead>
@@ -206,10 +267,11 @@ const ExpenseTable = () => {
             ) : (
               expenses.map((expense) => (
                 <tr key={expense.id} className="bg-white hover:bg-gray-100">
-                  <td className="border border-gray-300 px-4 py-2">{expense.title}</td>
-                  <td className="border border-gray-300 px-4 py-2">${expense.amount.toFixed(2)}</td>
-                  <td className="border border-gray-300 px-4 py-2">{new Date(expense.date).toLocaleDateString()}</td>
-                  <td className="border border-gray-300 px-4 py-2">
+                  <td className="border border-gray-300 px-4 py-2 text-center">{expense.title}</td>
+                  <td className="border border-gray-300 px-4 py-2 text-center">${expense.amount.toFixed(2)}</td>
+                  <td className="border border-gray-300 px-4 py-2 text-center">{new Date(expense.date).toLocaleDateString()}</td>
+                  <td className="border border-gray-300 px-4 py-2 text-center">{expense.budget.title}</td>
+                  <td className="border border-gray-300 px-4 py-2 text-center">
                     <button
                       onClick={() => handleDeleteExpense(expense.id)}
                       className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600"
@@ -224,7 +286,7 @@ const ExpenseTable = () => {
         </table>
       </div>
 
-      {/* Pagination Component */}
+ 
       <Pagination
         currentPage={page}
         totalResults={totalResults}

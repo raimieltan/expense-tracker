@@ -2,7 +2,7 @@ import { expenseRepository } from "@/repository/expenseRepository";
 
 // services/expenseService.ts
 export const expenseService = {
-  async createExpense(data: { title: string; amount: number; date: Date; userId: number }) {
+  async createExpense(data: { title: string; amount: number; date: Date; userId: number, budgetId: number }) {
     if (!data.title || !data.amount || !data.date) {
       throw new Error('Missing required fields: title, amount, and date are required');
     }

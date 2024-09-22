@@ -13,6 +13,9 @@ export const budgetRepository = {
   async getBudgets(userId: number) {
     return prisma.budget.findMany({
       where: { userId },
+      include: {
+        expenses: true
+      },
       orderBy: { createdAt: 'desc' },
     });
   },

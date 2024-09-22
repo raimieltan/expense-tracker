@@ -4,7 +4,7 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 export const expenseRepository = {
-  async createExpense(data: { title: string; amount: number; date: Date; userId: number }) {
+  async createExpense(data: { title: string; amount: number; date: Date; userId: number, budgetId: number }) {
     return prisma.expense.create({
       data,
     });
@@ -27,7 +27,14 @@ export const expenseRepository = {
     // Find paginated expenses
     const expenses = await prisma.expense.findMany({
       where: { userId },
-      orderBy: { date: 'desc' }, // Sort by most recent
+      include: {
+        budget: {
+          select: {
+            title: true
+          }
+        }
+      },
+      orderBy: { date: 'asc' }, // Sort by most recent
       skip,
       take,
     });

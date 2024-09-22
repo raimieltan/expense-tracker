@@ -12,7 +12,16 @@ export const budgetService = {
   },
 
   async getBudgets(userId: number) {
-    return budgetRepository.getBudgets(userId);
+    const budgets = await budgetRepository.getBudgets(userId)
+
+
+   return budgets.map(budget => {
+      const totalExpenseAmount = budget.expenses.reduce((acc, expense) => acc + expense.amount, 0);
+      return {
+        ...budget,
+        totalExpenseAmount,
+      };
+    });
   },
 
   async getBudgetById(budgetId: number) {

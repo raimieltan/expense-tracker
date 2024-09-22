@@ -7,6 +7,7 @@ interface CircularProgressChartProps {
   value: number;
   maxValue: number;
   color: string;
+  overBudgetColor?: string;
   label: string;
   amount: number;
 }
@@ -15,14 +16,23 @@ const CircularProgressChart = ({
   value,
   maxValue,
   color,
+  overBudgetColor = '#EF4444', 
   label,
   amount,
 }: CircularProgressChartProps) => {
+  const isOverBudget = value > maxValue;
+  const progressValue = isOverBudget ? maxValue : value; 
+  const overBudgetValue = isOverBudget ? value - maxValue : 0; 
+
   const data = {
     datasets: [
       {
-        data: [value, maxValue - value],
-        backgroundColor: [color, '#e5e7eb'], // primary color and light gray for the remaining part
+        data: isOverBudget
+          ? [maxValue, overBudgetValue]
+          : [value, maxValue - value],
+        backgroundColor: isOverBudget
+          ? [color, overBudgetColor] 
+          : [color, '#e5e7eb'], 
         cutout: '70%',
         borderWidth: 0,
       },
@@ -32,18 +42,20 @@ const CircularProgressChart = ({
   const options = {
     responsive: true,
     maintainAspectRatio: false,
-    cutout: '70%', // hollow center for the circle
+    cutout: '70%',
   };
 
   return (
     <div className="flex flex-col items-center">
-      {/* Chart */}
+
       <div className="w-24 h-24">
         <Doughnut data={data} options={options} />
       </div>
 
-      {/* Amount and Label */}
-      <p className="text-xl font-semibold mt-2">${amount}</p>
+      
+      <p className={`text-xl font-semibold mt-2 ${isOverBudget ? 'text-red-600' : ''}`}>
+        ${amount} {isOverBudget && '(Over)'}
+      </p>
       <p className="text-sm text-gray-500">{label}</p>
     </div>
   );

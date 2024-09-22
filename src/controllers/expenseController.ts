@@ -3,7 +3,7 @@ import { expenseService } from '@/services/expenseService';
 export const expenseController = {
   // Create a new expense
   async create(req: Request) {
-    const { title, amount, date } = await req.json();
+    const { title, amount, date, budgetId } = await req.json();
     const user = JSON.parse(req.headers.get('user')!); // Extract user info from request headers
     const userId = user.userId; // Retrieve userId from token
 
@@ -15,7 +15,7 @@ export const expenseController = {
         throw new Error('Invalid date format');
       }
 
-      const expense = await expenseService.createExpense({ title, amount, date: parsedDate, userId });
+      const expense = await expenseService.createExpense({ title, amount, date: parsedDate, userId, budgetId });
       return new Response(JSON.stringify(expense), { status: 201 });
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
