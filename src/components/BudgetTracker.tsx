@@ -37,7 +37,7 @@ const BudgetTracker = ({ budgets, fetchBudgets }: BudgetTrackerProps) => {
       if (!token) throw new Error('User not authenticated. Please log in.');
 
 
-      const response = await fetch('http://localhost:3000/api/budgets', {
+      const response = await fetch('/api/budgets', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
