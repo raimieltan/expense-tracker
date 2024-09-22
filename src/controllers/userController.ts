@@ -9,8 +9,9 @@ export const userController = {
     try {
       const { user, token } = await userService.loginUser(email, password);
       return new Response(JSON.stringify({ user, token }), { status: 200 });
-    } catch (error: any) {
-      return new Response(JSON.stringify({ error: error.message }), { status: 401 });
+    } catch (error) {
+      console.log(error)
+      return new Response(JSON.stringify({ error: "Something wrong" }), { status: 401 });
     }
   },
 
@@ -20,8 +21,9 @@ export const userController = {
     try {
       const newUser = await userService.registerUser(name, email, password);
       return new Response(JSON.stringify({ message: 'User registered successfully', newUser }), { status: 201 });
-    } catch (error: any) {
-      return new Response(JSON.stringify({ error: error.message }), { status: 400 });
+    } catch (error) {
+      console.log(error)
+      return new Response(JSON.stringify({ error: "Something wrong"}), { status: 400 });
     }
   }
 };

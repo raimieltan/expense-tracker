@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import CircularProgressChart from './CircleProgressChart';
 import Modal from './Modal';
 
@@ -62,6 +62,14 @@ const BudgetTracker = ({ budgets, fetchBudgets }: BudgetTrackerProps) => {
 
   return (
     <div className="p-4 bg-white rounded-lg shadow">
+            <div className="flex justify-end mt-2">
+        <button
+          onClick={handleOpenModal}
+          className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition-colors"
+        >
+          Add Budget
+        </button>
+      </div>
       <Modal isOpen={isModalOpen} onClose={handleCloseModal}>
         <h2 className="text-lg font-semibold mb-4">Add New Budget</h2>
         <form onSubmit={handleAddBudget}>
@@ -95,31 +103,31 @@ const BudgetTracker = ({ budgets, fetchBudgets }: BudgetTrackerProps) => {
           </button>
         </form>
       </Modal>
-      <div className="flex justify-end mb-4 mt-2">
-        <button
-          onClick={handleOpenModal}
-          className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition-colors"
-        >
-          Add Budget
-        </button>
-      </div>
+
       <h2 className="text-lg font-semibold mb-4">Budget Overview</h2>
 
       <div className="grid grid-cols-4 gap-6">
-        {budgets.map((budget) => {
+        {
+          budgets.length <= 0 ? (
+            <p  className="text-center py-4">You dont have any budgets added.</p>
+          ) : (
+            budgets.map((budget) => {
 
-          return (
-            <CircularProgressChart
-              key={budget.id}
-              value={budget.totalExpenseAmount}
-              maxValue={budget.amount}
-              color="#60A5FA"
-              overBudgetColor="#EF4444"
-              label={budget.title}
-              amount={budget.totalExpenseAmount}
-            />
-          );
-        })}
+              return (
+                <CircularProgressChart
+                  key={budget.id}
+                  value={budget.totalExpenseAmount}
+                  maxValue={budget.amount}
+                  color="#60A5FA"
+                  overBudgetColor="#EF4444"
+                  label={budget.title}
+                  amount={budget.totalExpenseAmount}
+                />
+              );
+            })
+          )
+        }
+     
       </div>
     </div>
   );

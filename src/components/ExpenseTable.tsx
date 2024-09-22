@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Modal from './Modal';
 import Pagination from './Pagination';
 import BudgetTracker from './BudgetTracker';
+import SignOutButton from './Signout';
 
 interface Expense {
   id: number;
@@ -62,8 +63,9 @@ const ExpenseTable = () => {
 
       const data = await res.json();
       setBudgets(data); // Set available budgets
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err) {
+      console.log(err)
+      setError("An unexpected error happened");
     }
   };
 
@@ -89,8 +91,9 @@ const ExpenseTable = () => {
       setExpenses(data.expenses);
       setTotalResults(data.totalExpenses); 
       setTotalAmount(data.totalAmount);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err) {
+      console.log(err)
+      setError("An unexpected error happened");
     } finally {
       setLoading(false);
     }
@@ -126,8 +129,9 @@ const ExpenseTable = () => {
       setSelectedBudget(null);
       fetchExpenses();
       fetchBudgets();
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err) {
+      console.log(err)
+      setError("An unexpected error happened");
     }
   };
 
@@ -149,11 +153,12 @@ const ExpenseTable = () => {
         throw new Error('Failed to delete expense');
       }
 
-      // Refetch data after deletion
+  
       fetchExpenses();
       fetchBudgets();
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err) {
+      console.log(err)
+      setError("An unexpected error happened");
     }
   };
 
@@ -165,16 +170,15 @@ const ExpenseTable = () => {
 
   return (
     <div className="container mx-auto py-6">
-      <h1 className="text-2xl font-semibold text-center mb-4">Expenses</h1>
-
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-2xl font-semibold">Expenses</h1>
+        <SignOutButton /> {/* Sign out button aligned to the right */}
+      </div>
    
-      <p className="text-center text-lg font-semibold mb-4">Total Amount: ${totalAmount.toFixed(2)}</p>
+      <p className="text-center text-lg font-semibold mb-4">Total Amount: ₱{totalAmount.toFixed(2)}</p>
 
-      {
-        budgets.length > 0 ? (
           <BudgetTracker budgets={budgets} fetchBudgets={fetchBudgets} />
-        ) : null
-      }
+
 
 
       <div className="flex justify-end mb-4 mt-2">
@@ -268,7 +272,7 @@ const ExpenseTable = () => {
               expenses.map((expense) => (
                 <tr key={expense.id} className="bg-white hover:bg-gray-100">
                   <td className="border border-gray-300 px-4 py-2 text-center">{expense.title}</td>
-                  <td className="border border-gray-300 px-4 py-2 text-center">${expense.amount.toFixed(2)}</td>
+                  <td className="border border-gray-300 px-4 py-2 text-center">₱{expense.amount.toFixed(2)}</td>
                   <td className="border border-gray-300 px-4 py-2 text-center">{new Date(expense.date).toLocaleDateString()}</td>
                   <td className="border border-gray-300 px-4 py-2 text-center">{expense.budget.title}</td>
                   <td className="border border-gray-300 px-4 py-2 text-center">

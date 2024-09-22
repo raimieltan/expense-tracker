@@ -33,8 +33,9 @@ const LoginPage = () => {
       // Store JWT or handle authentication success (e.g., redirect to dashboard)
       localStorage.setItem('token', data.token); // Store token in localStorage
       router.push('/dashboard'); // Redirect to dashboard or desired page
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err) {
+      console.log(err)
+      setError("An unexpected error happened");
     } finally {
       setLoading(false);
     }

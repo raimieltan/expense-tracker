@@ -1,7 +1,7 @@
 // middleware/authMiddleware.ts
 
 import { verifyToken } from '@/utils/jwt';
-import { NextResponse } from 'next/server';
+
 
 export async function authMiddleware(req: Request) {
   const authHeader = req.headers.get('Authorization');

@@ -21,7 +21,6 @@ const CircularProgressChart = ({
   amount,
 }: CircularProgressChartProps) => {
   const isOverBudget = value > maxValue;
-  const progressValue = isOverBudget ? maxValue : value; 
   const overBudgetValue = isOverBudget ? value - maxValue : 0; 
 
   const data = {
@@ -54,7 +53,7 @@ const CircularProgressChart = ({
 
       
       <p className={`text-xl font-semibold mt-2 ${isOverBudget ? 'text-red-600' : ''}`}>
-        ${amount} {isOverBudget && '(Over)'}
+      ₱{amount} {isOverBudget && '(Over)'}
       </p>
       <p className="text-sm text-gray-500">{label}</p>
     </div>
