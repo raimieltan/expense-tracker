@@ -1,36 +1,41 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# expense-tracker
 
-## Getting Started
+Personal finance app — track expenses, set monthly budgets, visualize spending. Next.js 14 + Prisma + PostgreSQL, with a layered controller / service / repository backend and a Three.js-rendered visual on the dashboard.
 
-First, run the development server:
+## Stack
+
+- Next.js 14 (App Router) + TypeScript
+- Prisma + PostgreSQL
+- JWT auth — `bcrypt`, `jsonwebtoken`, httpOnly cookies
+- Chart.js + `react-chartjs-2` for budget breakdowns
+- `@react-three/fiber` + `drei` for the 3D dashboard element
+
+## Architecture
+
+Explicitly layered inside `src/`:
+
+- `controllers/` — parse/validate HTTP input, shape the response
+- `services/` — domain logic (budget totals, expense allocation)
+- `repository/` — Prisma access
+- `middlewares/` — JWT verification
+- `app/api/{auth,budgets,expenses}/` — route handlers delegate to controllers
+
+The separation is heavier than a personal CRUD app needs by default — the point was to practice NestJS-style backend patterns inside Next.js route handlers.
+
+## Data model
+
+- **User** → has many `Budget`, has many `Expense`
+- **Budget** → has many `Expense`
+- Expenses optionally roll up to a budget; un-budgeted expenses remain visible but are excluded from budget math.
+
+## Local dev
 
 ```bash
+# .env
+DATABASE_URL=postgresql://user:pass@localhost:5432/expense_tracker
+JWT_SECRET=change-me
+
+npm install
+npx prisma migrate dev
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
